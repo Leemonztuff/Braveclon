@@ -1,0 +1,5 @@
+{
+  "name": "Brave Frontier Clone MVP",
+  "description": "A turn-based tactical RPG with gacha mechanics, elemental advantages, and Brave Bursts.",
+  "requestFramePermissions": ["camera"]
+}
