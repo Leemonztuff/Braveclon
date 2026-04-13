@@ -16,12 +16,15 @@ interface FloatingDamage {
 }
 
 export default function BattleScreen({ state, stageId, onEnd }: { state: PlayerState, stageId: number, onEnd: (victory: boolean) => void }) {
+  const validTeam = state.team.filter(id => id !== null && state.inventory.some(u => u.instanceId === id));
+  
   const [playerUnits, setPlayerUnits] = useState<BattleUnit[]>(() => {
-    return state.team
-      .filter(id => id !== null)
+    return validTeam
       .map((instanceId, idx) => {
-        const inst = state.inventory.find(u => u.instanceId === instanceId)!;
+        const inst = state.inventory.find(u => u.instanceId === instanceId);
+        if (!inst) return null;
         const template = UNIT_DATABASE[inst.templateId];
+        if (!template) return null;
         const stats = calculateStats(template, inst.level, inst.equipment, state.equipmentInventory);
         return {
           id: `p_${idx}`,
@@ -38,7 +41,8 @@ export default function BattleScreen({ state, stageId, onEnd }: { state: PlayerS
           queuedBb: false,
           actionState: 'idle'
         };
-      });
+      })
+      .filter((u): u is BattleUnit => u !== null);
   });
 
   const [enemyUnits, setEnemyUnits] = useState<BattleUnit[]>(() => {

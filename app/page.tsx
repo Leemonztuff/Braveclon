@@ -175,10 +175,9 @@ export default function GameApp() {
             )}
             {currentScreen === 'battle' && battleStage !== null && (
               <BattleScreen
-                stage={STAGES.find(s => s.id === battleStage)!}
-                playerTeam={playerTeam}
-                equipmentInventory={state.equipmentInventory}
-                onBattleEnd={endBattle}
+                state={state}
+                stageId={battleStage}
+                onEnd={endBattle}
               />
             )}
           </div>

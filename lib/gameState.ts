@@ -65,6 +65,15 @@ export function useGameState() {
         if (!parsed.lastPityReset) {
           parsed.lastPityReset = new Date().toISOString().split('T')[0];
         }
+        if (!parsed.inventory || !Array.isArray(parsed.inventory)) {
+          parsed.inventory = INITIAL_STATE.inventory;
+        }
+        parsed.inventory = parsed.inventory.filter((unit: any) => {
+          return unit && unit.instanceId && unit.templateId && UNIT_DATABASE[unit.templateId];
+        });
+        if (parsed.inventory.length === 0) {
+          parsed.inventory = INITIAL_STATE.inventory;
+        }
         parsed.inventory.forEach((unit: any) => {
           if (!unit.equipment) {
             unit.equipment = { weapon: null, armor: null, accessory: null };
