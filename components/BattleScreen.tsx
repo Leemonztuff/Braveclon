@@ -445,28 +445,114 @@ export default function BattleScreen({ state, stageId, onEnd }: { state: PlayerS
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-zinc-700 to-transparent opacity-50" />
       </div>
 
-      {/* Controls */}
-      <div className="relative z-10 bg-zinc-900/90 border-t border-zinc-800 p-4 pb-safe">
-        {turnState === 'player_input' ? (
-          <button 
-            onClick={executeTurn}
-            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl font-black text-xl tracking-widest shadow-[0_0_15px_rgba(79,70,229,0.5)] active:scale-95 transition-transform"
-          >
-            FIGHT
-          </button>
-        ) : turnState === 'victory' ? (
-          <div className="w-full py-4 bg-yellow-500 text-black text-center rounded-xl font-black text-xl tracking-widest">
-            STAGE CLEARED!
-          </div>
-        ) : turnState === 'defeat' ? (
-          <div className="w-full py-4 bg-red-900 text-white text-center rounded-xl font-black text-xl tracking-widest">
-            GAME OVER
-          </div>
-        ) : (
-          <div className="w-full py-4 bg-zinc-800 text-zinc-500 text-center rounded-xl font-bold tracking-widest">
-            EXECUTING TURN...
-          </div>
-        )}
+      {/* Controls - Unit Tray */}
+      <div className="relative z-10 bg-zinc-900/95 border-t border-zinc-800 p-2 pb-safe">
+        <div className="flex justify-center gap-2 overflow-x-auto pb-2">
+          {playerUnits.map((unit, idx) => {
+            const hpPercent = (unit.hp / unit.maxHp) * 100;
+            const bbPercent = (unit.bbGauge / unit.maxBb) * 100;
+            const isSelected = unit.queuedBb;
+            const isDead = unit.isDead;
+            
+            return (
+              <button
+                key={unit.id}
+                disabled={isDead || turnState !== 'player_input'}
+                onClick={() => toggleBb(unit.id)}
+                className={`relative flex flex-col items-center p-2 rounded-xl border-2 transition-all min-w-[70px] ${
+                  isDead ? 'opacity-30 border-zinc-800 bg-zinc-900/50 cursor-not-allowed' :
+                  isSelected ? 'border-yellow-400 bg-yellow-400/20 shadow-[0_0_15px_rgba(250,204,21,0.4)]' :
+                  bbPercent >= 100 ? 'border-blue-400 bg-blue-400/10 hover:border-blue-300' :
+                  'border-zinc-700 bg-zinc-800/50 hover:border-zinc-600'
+                }`}
+              >
+                {/* Unit mini sprite */}
+                <div className="w-10 h-10 mb-1 relative">
+                  <img 
+                    src={unit.template.spriteUrl} 
+                    alt={unit.template.name}
+                    className="w-full h-full object-contain drop-shadow-md"
+                    style={{ imageRendering: 'pixelated' }}
+                  />
+                  {isDead && (
+                    <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
+                      <span className="text-red-500 font-bold text-xs">X</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Element badge */}
+                <div className={`text-[8px] font-bold px-1 rounded mb-1 ${
+                  unit.template.element === 'Fire' ? 'bg-red-500/80 text-white' :
+                  unit.template.element === 'Water' ? 'bg-blue-500/80 text-white' :
+                  unit.template.element === 'Earth' ? 'bg-amber-600/80 text-white' :
+                  unit.template.element === 'Thunder' ? 'bg-purple-500/80 text-white' :
+                  unit.template.element === 'Light' ? 'bg-yellow-500/80 text-black' :
+                  'bg-zinc-600/80 text-white'
+                }`}>
+                  {unit.template.element}
+                </div>
+                
+                {/* HP Bar */}
+                <div className="w-full h-1.5 bg-zinc-950 rounded-full overflow-hidden mb-1">
+                  <div 
+                    className={`h-full transition-all ${hpPercent > 50 ? 'bg-green-500' : hpPercent > 25 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                    style={{ width: `${hpPercent}%` }}
+                  />
+                </div>
+                
+                {/* BB Gauge */}
+                <div className="w-full h-1 bg-zinc-950 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full transition-all ${bbPercent >= 100 ? 'bg-yellow-400 animate-pulse' : 'bg-blue-500'}`}
+                    style={{ width: `${bbPercent}%` }}
+                  />
+                </div>
+                
+                {/* Ready indicator */}
+                {bbPercent >= 100 && !isSelected && !isDead && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse" />
+                )}
+                
+                {/* Leader indicator */}
+                {idx === 0 && !isDead && (
+                  <div className="absolute -top-1 -left-1 bg-red-500 text-white text-[8px] font-bold px-1 rounded">LDR</div>
+                )}
+              </button>
+            );
+          })}
+          
+          {/* Empty slots placeholder */}
+          {playerUnits.length < 5 && Array.from({ length: 5 - playerUnits.length }).map((_, idx) => (
+            <div key={`empty-${idx}`} className="flex items-center justify-center w-[70px] h-[90px] rounded-xl border-2 border-dashed border-zinc-800 bg-zinc-900/30">
+              <span className="text-zinc-600 text-xs">EMPTY</span>
+            </div>
+          ))}
+        </div>
+        
+        {/* Action Button */}
+        <div className="mt-2">
+          {turnState === 'player_input' ? (
+            <button 
+              onClick={executeTurn}
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl font-black text-lg tracking-widest shadow-[0_0_15px_rgba(79,70,229,0.5)] active:scale-95 transition-transform"
+            >
+              ⚔️ ATTACK
+            </button>
+          ) : turnState === 'victory' ? (
+            <div className="w-full py-3 bg-yellow-500 text-black text-center rounded-xl font-black text-lg tracking-widest">
+              ✨ STAGE CLEARED!
+            </div>
+          ) : turnState === 'defeat' ? (
+            <div className="w-full py-3 bg-red-900 text-white text-center rounded-xl font-black text-lg tracking-widest">
+              💀 GAME OVER
+            </div>
+          ) : (
+            <div className="w-full py-3 bg-zinc-800 text-zinc-500 text-center rounded-xl font-bold tracking-widest">
+              ⚡ EXECUTING...
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
