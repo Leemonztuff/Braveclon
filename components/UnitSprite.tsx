@@ -9,9 +9,9 @@ export function UnitSprite({ unit, onClick, interactive, hitEffectElement }: { u
 
   const variants: any = {
     idle: { y: [0, -4, 0], transition: { repeat: Infinity, duration: 2, ease: "easeInOut" } },
-    attacking: { y: unit.isPlayer ? -40 : 40, scale: 1.1, zIndex: 20, transition: { type: "spring", stiffness: 400, damping: 15 } },
+    attacking: { x: unit.isPlayer ? -50 : 50, scale: 1.1, zIndex: 20, transition: { type: "spring", stiffness: 400, damping: 15 } },
     skill: { 
-      y: unit.isPlayer ? [-20, -80, -60] : [20, 80, 60], 
+      x: unit.isPlayer ? [-30, -100, -80] : [30, 100, 80], 
       scale: [1, 1.5, 1.3], 
       rotate: [0, -5, 5, 0],
       filter: ["brightness(1)", "brightness(2) drop-shadow(0 0 25px rgba(250,204,21,1))", "brightness(1.5) drop-shadow(0 0 15px rgba(250,204,21,0.8))"], 

@@ -378,11 +378,11 @@ export default function BattleScreen({ state, stageId, onEnd }: { state: PlayerS
       </div>
 
       {/* Battle Area */}
-      <div className="flex-1 relative z-10 flex flex-col justify-between py-6 px-2">
+      <div className="flex-1 relative z-10 py-6 px-2 min-h-0">
         
         {/* Floating Damage Numbers */}
         {floatingDamages.map(fd => {
-          const isPlayerTarget = enemyUnits.some(e => e.id === fd.targetId);
+          const isEnemyTarget = enemyUnits.some(e => e.id === fd.targetId);
           return (
             <motion.div
               key={fd.id}
@@ -390,42 +390,59 @@ export default function BattleScreen({ state, stageId, onEnd }: { state: PlayerS
               animate={{ opacity: 0, y: -50, scale: 1.2 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.8 }}
-              className={`absolute left-1/2 top-1/3 -translate-x-1/2 z-50 pointer-events-none font-black text-2xl ${
+              className={`absolute z-50 pointer-events-none font-black text-2xl ${
                 fd.isHeal ? 'text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]' :
                 fd.isWeakness ? 'text-orange-400 drop-shadow-[0_0_10px_rgba(249,115,22,0.8)]' :
                 'text-white drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]'
-              }`}
+              } ${isEnemyTarget ? 'left-24' : 'right-24'}`}
             >
               {fd.isHeal ? '+' : '-'}{fd.damage}
             </motion.div>
           );
         })}
 
-        {/* Enemies */}
-        <div className="flex justify-center gap-4 flex-wrap max-w-[300px] mx-auto">
-          {enemyUnits.map(unit => (
-            <div key={unit.id} className="flex justify-center w-[72px]">
+        {/* Enemies - Left side, staggered formation */}
+        <div className="absolute left-4 top-1/4 flex flex-col gap-3">
+          {enemyUnits.map((unit, idx) => (
+            <motion.div
+              key={unit.id}
+              initial={{ x: -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: idx * 0.1 }}
+              className="relative"
+              style={{ marginTop: idx % 2 === 1 ? '40px' : '0px' }}
+            >
               <UnitSprite 
                 unit={unit} 
                 hitEffectElement={bbHitEffect?.targetId === unit.id ? bbHitEffect.element : null}
               />
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        {/* Players */}
-        <div className="flex justify-center flex-wrap gap-x-4 gap-y-8 mt-auto max-w-[280px] mx-auto">
-          {playerUnits.map((unit) => (
-            <div key={unit.id} className="flex justify-center w-[72px]">
+        {/* Players - Right side, staggered formation */}
+        <div className="absolute right-4 bottom-1/4 flex flex-col gap-3">
+          {playerUnits.map((unit, idx) => (
+            <motion.div
+              key={unit.id}
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: idx * 0.1 }}
+              className="relative cursor-pointer"
+              style={{ marginTop: idx % 2 === 1 ? '40px' : '0px' }}
+              onClick={() => toggleBb(unit.id)}
+            >
               <UnitSprite 
                 unit={unit} 
-                onClick={() => toggleBb(unit.id)} 
                 interactive={turnState === 'player_input'}
                 hitEffectElement={bbHitEffect?.targetId === unit.id ? bbHitEffect.element : null}
               />
-            </div>
+            </motion.div>
           ))}
         </div>
+
+        {/* Side-scrolling battlefield ground effect */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-zinc-700 to-transparent opacity-50" />
       </div>
 
       {/* Controls */}
