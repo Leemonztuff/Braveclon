@@ -17,17 +17,20 @@ export interface EquipmentTemplate {
   statsBonus: Partial<Stats>;
   description: string;
   icon: string;
+  spriteUrl?: string;
 }
 
-export type SkillType = 'damage' | 'heal' | 'buff';
+export type SkillType = 'damage' | 'heal' | 'buff' | 'attack' | 'break' | 'support';
 
 export interface Skill {
   id: string;
   name: string;
   type: SkillType;
   description: string;
-  power: number; // Multiplier for damage or heal
-  cost: number; // BB gauge cost
+  power: number;
+  cost: number;
+  icon?: string;
+  effect?: string;
 }
 
 export interface UnitTemplate {
@@ -36,10 +39,12 @@ export interface UnitTemplate {
   element: Element;
   rarity: number;
   baseStats: Stats;
-  growthRate: Stats; // Stats gained per level
+  growthRate: Stats;
   maxLevel: number;
   skill: Skill;
   spriteUrl?: string;
+  skillIcon?: string;
+  leaderSkill?: Skill;
 }
 
 export interface StageTemplate {
