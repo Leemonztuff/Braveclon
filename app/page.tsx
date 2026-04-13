@@ -158,17 +158,22 @@ export default function GameApp() {
             )}
             {currentScreen === 'quest' && <QuestScreen onStartBattle={startBattle} />}
             {currentScreen === 'qrhunt' && (
-              <QRHuntScreen scansToday={state.qrState.scansToday} onScan={processQrScan} />
+              <QRHuntScreen 
+                state={state}
+                onBack={() => setCurrentScreen('home')}
+                onScan={processQrScan}
+              />
             )}
             {currentScreen === 'fusion' && fusionTargetId && (
               <FusionScreen
-                targetUnit={state.inventory.find(u => u.instanceId === fusionTargetId)!}
-                inventory={state.inventory}
-                onFuse={fuseUnits}
-                onClose={() => {
+                state={state}
+                targetInstanceId={fusionTargetId}
+                onBack={() => {
                   setFusionTargetId(null);
                   setCurrentScreen('units');
                 }}
+                fuseUnits={fuseUnits}
+                onAlert={(msg) => setAlertMessage(msg)}
               />
             )}
             {currentScreen === 'battle' && battleStage !== null && (
