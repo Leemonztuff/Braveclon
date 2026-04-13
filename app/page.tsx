@@ -139,13 +139,11 @@ export default function GameApp() {
             {currentScreen === 'home' && <HomeScreen onNavigate={handleNavigation} />}
             {currentScreen === 'units' && (
               <UnitsScreen
-                team={state.team}
-                inventory={state.inventory}
-                equipment={state.equipmentInventory}
-                onSetTeamMember={setTeamMember}
-                onEquipItem={equipItem}
-                onUnequipItem={unequipItem}
-                onFusion={() => setCurrentScreen('fusion')}
+                state={state}
+                setTeamMember={setTeamMember}
+                equipItem={equipItem}
+                unequipItem={unequipItem}
+                onNavigateToFusion={() => setCurrentScreen('fusion')}
               />
             )}
             {currentScreen === 'summon' && (

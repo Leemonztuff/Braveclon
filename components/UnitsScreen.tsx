@@ -20,12 +20,15 @@ export default function UnitsScreen({
   const [inspectUnitId, setInspectUnitId] = useState<string | null>(null);
   const [equipModalSlot, setEquipModalSlot] = useState<EquipSlot | null>(null);
 
+  const safeTeam = state?.team || [];
+  const safeInventory = state?.inventory || [];
+  const safeEquipment = state?.equipmentInventory || [];
+
   const handleSelectUnit = (instanceId: string) => {
     if (selectedSlot !== null) {
-      // Check if unit is already in team
-      const existingIndex = state.team.indexOf(instanceId);
+      const existingIndex = safeTeam.indexOf(instanceId);
       if (existingIndex !== -1) {
-        setTeamMember(existingIndex, null); // Remove from old slot
+        setTeamMember(existingIndex, null);
       }
       setTeamMember(selectedSlot, instanceId);
       setSelectedSlot(null);
@@ -39,8 +42,8 @@ export default function UnitsScreen({
       {/* Team Display */}
       <div className="bg-zinc-900 rounded-xl p-4 mb-6 border border-zinc-800 shadow-inner">
         <div className="flex justify-between gap-2">
-          {state.team.map((instanceId, index) => {
-            const unitInstance = instanceId ? state.inventory.find(u => u.instanceId === instanceId) : null;
+          {safeTeam.map((instanceId, index) => {
+            const unitInstance = instanceId ? safeInventory.find(u => u.instanceId === instanceId) : null;
             const template = unitInstance ? UNIT_DATABASE[unitInstance.templateId] : null;
             const isSelected = selectedSlot === index;
 
@@ -80,7 +83,7 @@ export default function UnitsScreen({
       {/* Inventory List */}
       <div className="flex-1 overflow-y-auto bg-zinc-900/50 rounded-xl border border-zinc-800/50 p-2">
         <div className="grid grid-cols-1 gap-2">
-          {state.inventory.map(inst => {
+          {safeInventory.map(inst => {
             const template = UNIT_DATABASE[inst.templateId];
             const stats = calculateStats(template, inst.level, inst.equipment, state.equipmentInventory);
             const inTeam = state.team.includes(inst.instanceId);
@@ -148,9 +151,11 @@ export default function UnitsScreen({
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
             {(() => {
-              const unit = state.inventory.find(u => u.instanceId === inspectUnitId)!;
+              const unit = safeInventory.find(u => u.instanceId === inspectUnitId);
+              if (!unit) return null;
               const template = UNIT_DATABASE[unit.templateId];
-              const stats = calculateStats(template, unit.level, unit.equipment, state.equipmentInventory);
+              if (!template) return null;
+              const stats = calculateStats(template, unit.level, unit.equipment, safeEquipment);
               
               return (
                 <>
@@ -275,8 +280,7 @@ export default function UnitsScreen({
                 .filter(eq => EQUIPMENT_DATABASE[eq.templateId].type === equipModalSlot)
                 .map(eq => {
                   const template = EQUIPMENT_DATABASE[eq.templateId];
-                  // Check who has it equipped
-                  const equippedBy = state.inventory.find(u => 
+                  const equippedBy = safeInventory.find(u => 
                     u.equipment.weapon === eq.instanceId || 
                     u.equipment.armor === eq.instanceId || 
                     u.equipment.accessory === eq.instanceId
