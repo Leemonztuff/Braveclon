@@ -36,6 +36,7 @@ export function UnitSprite({ unit, onClick, interactive, hitEffectElement }: { u
       variants={variants}
       initial="idle"
       animate={unit.isDead ? "dead" : unit.actionState}
+      style={{ transform: unit.isPlayer ? 'scaleX(1)' : 'scaleX(-1)', transformOrigin: 'center center' }}
     >
       {/* Status Bars */}
       <div className="w-16 mb-2 flex flex-col gap-[2px] z-10">
