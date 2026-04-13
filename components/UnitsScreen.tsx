@@ -5,7 +5,7 @@ import { PlayerState, calculateStats } from '@/lib/gameState';
 import { UNIT_DATABASE, EQUIPMENT_DATABASE, EquipSlot, getExpForLevel } from '@/lib/gameData';
 import { Shield, Sword, Gem, X, Zap, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AtlasSprite, ATLASES, getAtlasIcon } from './AtlasSprite';
+import { AtlasSprite, ATLASES, getPlaceholderIcon } from './AtlasSprite';
 
 interface UnitsScreenProps {
   state: PlayerState;
@@ -344,19 +344,16 @@ export default function UnitsScreen({ state, setTeamMember, equipItem, unequipIt
                         {/* Skill Card */}
                         <div className="bg-zinc-800/50 rounded-xl p-3 border border-zinc-700 mb-4">
                           <div className="flex items-center gap-2 mb-1">
-                            {template.atlasKey && template.skillIconIndex !== undefined ? (
-                              <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-600">
-                                <AtlasSprite 
-                                  atlasUrl={ATLASES[template.atlasKey as keyof typeof ATLASES]} 
-                                  iconIndex={template.skillIconIndex}
-                                  width={32}
-                                  height={32}
-                                  alt={template.skill.name}
-                                />
-                              </div>
-                            ) : (
-                              <span className="text-lg">✨</span>
-                            )}
+                            <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-600 bg-zinc-900 flex items-center justify-center">
+                              <AtlasSprite 
+                                atlasUrl={template.atlasKey ? ATLASES[template.atlasKey as keyof typeof ATLASES] : undefined}
+                                iconIndex={template.skillIconIndex ?? 3}
+                                width={32}
+                                height={32}
+                                alt={template.skill.name}
+                                fallbackIcon={getPlaceholderIcon(template.skill.type)}
+                              />
+                            </div>
                             <span className="text-sm font-bold text-yellow-400">{template.skill.name}</span>
                             <span className="text-[10px] bg-zinc-700 px-1.5 py-0.5 rounded text-zinc-300">
                               {template.skill.type}
@@ -397,17 +394,14 @@ export default function UnitsScreen({ state, setTeamMember, equipItem, unequipIt
                                   className="flex-1 flex items-center gap-3 p-3 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700"
                                 >
                                   <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center overflow-hidden">
-                                    {eqTemplate?.atlasKey && eqTemplate.iconIndex !== undefined ? (
-                                      <AtlasSprite 
-                                        atlasUrl={ATLASES[eqTemplate.atlasKey as keyof typeof ATLASES]} 
-                                        iconIndex={eqTemplate.iconIndex}
-                                        width={40}
-                                        height={40}
-                                        alt={eqTemplate.name}
-                                      />
-                                    ) : (
-                                      <span className="text-xl">{eqTemplate ? eqTemplate.icon : slot === 'weapon' ? '⚔️' : slot === 'armor' ? '🛡️' : '💍'}</span>
-                                    )}
+                                    <AtlasSprite 
+                                      atlasUrl={eqTemplate?.atlasKey ? ATLASES[eqTemplate.atlasKey as keyof typeof ATLASES] : undefined}
+                                      iconIndex={eqTemplate?.iconIndex ?? 0}
+                                      width={40}
+                                      height={40}
+                                      alt={eqTemplate?.name || ''}
+                                      fallbackIcon={getPlaceholderIcon(slot)}
+                                    />
                                   </div>
                                   <div className="flex-1 text-left">
                                     <div className="text-[10px] uppercase text-zinc-500 font-bold">{slot}</div>
@@ -485,17 +479,14 @@ export default function UnitsScreen({ state, setTeamMember, equipItem, unequipIt
                         className="flex items-center gap-3 p-3 bg-zinc-800 border border-zinc-700 rounded-xl hover:border-yellow-400 text-left transition-colors"
                       >
                         <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center overflow-hidden">
-                          {template.atlasKey && template.iconIndex !== undefined ? (
-                            <AtlasSprite 
-                              atlasUrl={ATLASES[template.atlasKey as keyof typeof ATLASES]} 
-                              iconIndex={template.iconIndex}
-                              width={40}
-                              height={40}
-                              alt={template.name}
-                            />
-                          ) : (
-                            <span className="text-2xl">{template.icon}</span>
-                          )}
+                          <AtlasSprite 
+                            atlasUrl={template.atlasKey ? ATLASES[template.atlasKey as keyof typeof ATLASES] : undefined}
+                            iconIndex={template.iconIndex ?? 0}
+                            width={40}
+                            height={40}
+                            alt={template.name}
+                            fallbackIcon={getPlaceholderIcon(template.type)}
+                          />
                         </div>
                         <div className="flex-1">
                           <div className="font-bold text-sm text-white">{template.name}</div>
