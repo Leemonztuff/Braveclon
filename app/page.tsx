@@ -23,7 +23,7 @@ const TAB_ITEMS = [
 ] as const;
 
 export default function GameApp() {
-  const { state, isLoaded, timeToNextEnergy, addUnit, setTeamMember, spendGems, spendEnergy, processQrScan, rollGacha, equipItem, unequipItem, winBattle, fuseUnits } = useGameState();
+  const { state, isLoaded, timeToNextEnergy, addUnit, setTeamMember, spendGems, spendEnergy, processQrScan, rollGacha, rollGachaMulti, equipItem, unequipItem, winBattle, fuseUnits } = useGameState();
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
   const [battleStage, setBattleStage] = useState<number | null>(null);
   const [fusionTargetId, setFusionTargetId] = useState<string | null>(null);
@@ -149,7 +149,14 @@ export default function GameApp() {
               />
             )}
             {currentScreen === 'summon' && (
-              <SummonScreen gems={state.gems} onSummon={addUnit} onSpendGems={spendGems} />
+              <SummonScreen 
+                state={state}
+                spendGems={spendGems} 
+                addUnit={addUnit}
+                rollGacha={rollGacha}
+                rollGachaMulti={rollGachaMulti}
+                onAlert={(msg) => setAlertMessage(msg)}
+              />
             )}
             {currentScreen === 'quest' && <QuestScreen onStartBattle={startBattle} />}
             {currentScreen === 'qrhunt' && (

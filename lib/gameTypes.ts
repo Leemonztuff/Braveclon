@@ -30,11 +30,13 @@ export interface PlayerState {
   maxEnergy: number;
   lastEnergyUpdateTime: number;
   gems: number;
-  zel: number; // Gold
+  zel: number;
   inventory: UnitInstance[];
   equipmentInventory: EquipInstance[];
-  team: (string | null)[]; // Array of 5 instanceIds
+  team: (string | null)[];
   qrState: QRState;
+  pityCounter: number;
+  lastPityReset: string;
 }
 
 export const INITIAL_STATE: PlayerState = {
@@ -59,5 +61,7 @@ export const INITIAL_STATE: PlayerState = {
     scansToday: 0,
     lastScanDate: new Date().toISOString().split('T')[0],
     scannedHashes: []
-  }
+  },
+  pityCounter: 0,
+  lastPityReset: new Date().toISOString().split('T')[0]
 };

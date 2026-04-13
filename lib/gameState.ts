@@ -56,6 +56,15 @@ export function useGameState() {
         if (!parsed.equipmentInventory) {
           parsed.equipmentInventory = INITIAL_STATE.equipmentInventory;
         }
+        if (!parsed.team || !Array.isArray(parsed.team)) {
+          parsed.team = INITIAL_STATE.team;
+        }
+        if (typeof parsed.pityCounter !== 'number') {
+          parsed.pityCounter = 0;
+        }
+        if (!parsed.lastPityReset) {
+          parsed.lastPityReset = new Date().toISOString().split('T')[0];
+        }
         parsed.inventory.forEach((unit: any) => {
           if (!unit.equipment) {
             unit.equipment = { weapon: null, armor: null, accessory: null };
@@ -273,17 +282,68 @@ export function useGameState() {
     return { success: true, message: rewardMessage, rewardType, rewardValue };
   };
 
-  const rollGacha = (): string => {
-    const totalWeight = GACHA_POOL.reduce((sum, item) => sum + item.weight, 0);
-    let roll = Math.random() * totalWeight;
+  const rollGacha = (): { unitId: string, isPity: boolean } => {
+    const pityThreshold = 20;
+    const today = new Date().toISOString().split('T')[0];
+    let pityActive = false;
     
-    for (const item of GACHA_POOL) {
-      if (roll < item.weight) {
-        return item.unitId;
+    const currentPity = state.pityCounter >= pityThreshold;
+    const pityReset = state.lastPityReset !== today;
+    
+    let selectedUnitId: string;
+    let isPity = false;
+    
+    if (currentPity && pityReset) {
+      const pool4Star = GACHA_POOL.filter(g => {
+        const u = UNIT_DATABASE[g.unitId];
+        return u.rarity === 4;
+      });
+      const pool5Star = GACHA_POOL.filter(g => {
+        const u = UNIT_DATABASE[g.unitId];
+        return u.rarity === 5;
+      });
+      
+      if (pool5Star.length > 0 && Math.random() < 0.3) {
+        const roll = Math.floor(Math.random() * pool5Star.length);
+        selectedUnitId = pool5Star[roll].unitId;
+        isPity = true;
+        pityActive = true;
+      } else if (pool4Star.length > 0) {
+        const roll = Math.floor(Math.random() * pool4Star.length);
+        selectedUnitId = pool4Star[roll].unitId;
+        isPity = true;
+        pityActive = true;
       }
-      roll -= item.weight;
     }
-    return GACHA_POOL[0].unitId; // Fallback
+    
+    if (!pityActive) {
+      const totalWeight = GACHA_POOL.reduce((sum, item) => sum + item.weight, 0);
+      let roll = Math.random() * totalWeight;
+      
+      for (const item of GACHA_POOL) {
+        if (roll < item.weight) {
+          selectedUnitId = item.unitId;
+          break;
+        }
+        roll -= item.weight;
+      }
+      if (!selectedUnitId) selectedUnitId = GACHA_POOL[0].unitId;
+    }
+    
+    setState(prev => {
+      let newPityCounter = prev.pityCounter + 1;
+      let newPityReset = prev.lastPityReset;
+      
+      const unitTemplate = UNIT_DATABASE[selectedUnitId];
+      if (unitTemplate.rarity >= 4 || pityActive) {
+        newPityCounter = 0;
+        newPityReset = today;
+      }
+      
+      return { ...prev, pityCounter: newPityCounter, lastPityReset: newPityReset };
+    });
+    
+    return { unitId: selectedUnitId, isPity };
   };
 
   const equipItem = (unitInstanceId: string, equipInstanceId: string, slot: EquipSlot) => {
@@ -445,6 +505,26 @@ export function useGameState() {
     return { success, expGained, leveledUp, oldLevel, newLevel };
   };
 
+  const rollGachaMulti = (count: number): string[] => {
+    const results: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const result = rollGacha();
+      results.push(result.unitId);
+      const newUnit = {
+        instanceId: `inst_${Date.now()}_${Math.floor(Math.random() * 1000)}_${i}`,
+        templateId: result.unitId,
+        level: 1,
+        exp: 0,
+        equipment: { weapon: null, armor: null, accessory: null }
+      };
+      setState(prev => ({
+        ...prev,
+        inventory: [...prev.inventory, newUnit]
+      }));
+    }
+    return results;
+  };
+
   return {
     state,
     isLoaded,
@@ -456,6 +536,7 @@ export function useGameState() {
     spendEnergy,
     processQrScan,
     rollGacha,
+    rollGachaMulti,
     equipItem,
     unequipItem,
     winBattle,

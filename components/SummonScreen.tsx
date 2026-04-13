@@ -5,29 +5,62 @@ import { motion, AnimatePresence } from 'motion/react';
 
 type SummonPhase = 'idle' | 'gate' | 'reveal';
 
-export default function SummonScreen({ state, spendGems, addUnit, rollGacha, onAlert }: { state: PlayerState, spendGems: (amount: number) => boolean, addUnit: (id: string) => void, rollGacha: () => string, onAlert: (msg: string) => void }) {
-  const [summonResult, setSummonResult] = useState<UnitTemplate | null>(null);
+interface SummonResultDisplay {
+  unit: UnitTemplate;
+  isPity: boolean;
+}
+
+export default function SummonScreen({ state, spendGems, addUnit, rollGacha, rollGachaMulti, onAlert }: { 
+  state: PlayerState, 
+  spendGems: (amount: number) => boolean, 
+  addUnit: (id: string) => void, 
+  rollGacha: () => { unitId: string, isPity: boolean },
+  rollGachaMulti: (count: number) => string[],
+  onAlert: (msg: string) => void 
+}) {
+  const [summonResults, setSummonResults] = useState<SummonResultDisplay[]>([]);
   const [phase, setPhase] = useState<SummonPhase>('idle');
 
-  const handleSummon = () => {
+  const pityThreshold = 20;
+  const pityProgress = state.pityCounter;
+  const pityPercent = Math.min(100, (pityProgress / pityThreshold) * 100);
+
+  const handleSingleSummon = () => {
     if (phase !== 'idle') return;
     
     if (spendGems(5)) {
-      // 1. Roll immediately to know the rarity for the gate color
-      const randomId = rollGacha();
-      const unit = UNIT_DATABASE[randomId];
-      setSummonResult(unit);
-      
-      // 2. Transition to gate phase
+      const result = rollGacha();
+      const unit = UNIT_DATABASE[result.unitId];
+      setSummonResults([{ unit, isPity: result.isPity }]);
       setPhase('gate');
       
-      // 3. After gate animation, show reveal
       setTimeout(() => {
         setPhase('reveal');
-        addUnit(randomId);
+        addUnit(result.unitId);
       }, 2500);
     } else {
       onAlert("Not enough gems! You need 5 💎 to summon a hero.");
+    }
+  };
+
+  const handleMultiSummon = () => {
+    if (phase !== 'idle') return;
+    
+    const cost = 45;
+    if (spendGems(cost)) {
+      const unitIds = rollGachaMulti(10);
+      const results = unitIds.map(id => ({
+        unit: UNIT_DATABASE[id],
+        isPity: false
+      }));
+      setSummonResults(results);
+      setPhase('gate');
+      
+      setTimeout(() => {
+        setPhase('reveal');
+      }, 2500);
+    } else {
+      onAlert(`Not enough gems! You need ${cost} 💎 for 10 summons.`);
     }
   };
 
@@ -63,18 +96,44 @@ export default function SummonScreen({ state, spendGems, addUnit, rollGacha, onA
                 <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/gate/200/200')] opacity-20 bg-cover" />
                 <span className="text-zinc-400 font-black tracking-widest z-10 text-xl drop-shadow-md">RARE SUMMON</span>
               </div>
-              <button 
-                onClick={handleSummon}
-                className="relative overflow-hidden rounded-full bg-gradient-to-r from-pink-500 to-purple-600 px-8 py-4 font-black text-white shadow-[0_0_20px_rgba(236,72,153,0.4)] transition-transform active:scale-95 hover:scale-105"
-              >
-                <span className="relative z-10 flex items-center gap-2 text-lg">
-                  SUMMON (5 💎)
-                </span>
-              </button>
+              
+              <div className="flex flex-col gap-4 w-full max-w-xs">
+                <button 
+                  onClick={handleSingleSummon}
+                  className="relative overflow-hidden rounded-full bg-gradient-to-r from-pink-500 to-purple-600 px-8 py-4 font-black text-white shadow-[0_0_20px_rgba(236,72,153,0.4)] transition-transform active:scale-95 hover:scale-105"
+                >
+                  <span className="relative z-10 flex items-center gap-2 text-lg">
+                    SUMMON (5 💎)
+                  </span>
+                </button>
+                
+                <button 
+                  onClick={handleMultiSummon}
+                  className="relative overflow-hidden rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-8 py-4 font-black text-white shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-transform active:scale-95 hover:scale-105"
+                >
+                  <span className="relative z-10 flex items-center gap-2 text-lg">
+                    x10 SUMMON (45 💎)
+                  </span>
+                </button>
+              </div>
+              
+              <div className="mt-6 text-xs text-zinc-500">
+                <div className="mb-2">Rates: 3★ 72% | 4★ 25% | 5★ 3%</div>
+                <div className="flex items-center gap-2">
+                  <span>Pity:</span>
+                  <div className="w-24 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all"
+                      style={{ width: `${pityPercent}%` }}
+                    />
+                  </div>
+                  <span>{pityProgress}/{pityThreshold}</span>
+                </div>
+              </div>
             </motion.div>
           )}
 
-          {phase === 'gate' && summonResult && (
+          {phase === 'gate' && summonResults[0] && (
             <motion.div
               key="gate"
               initial={{ opacity: 0 }}
@@ -83,17 +142,15 @@ export default function SummonScreen({ state, spendGems, addUnit, rollGacha, onA
               transition={{ duration: 0.5 }}
               className="flex flex-col items-center justify-center absolute inset-0"
             >
-              {/* Glowing Aura behind the door */}
               <motion.div 
                 animate={{ 
                   scale: [1, 1.2, 1],
                   opacity: [0.5, 1, 0.5]
                 }}
                 transition={{ duration: 1, repeat: Infinity }}
-                className={`absolute w-64 h-80 rounded-full bg-gradient-to-t blur-3xl opacity-50 ${getGateColor(summonResult.rarity)}`}
+                className={`absolute w-64 h-80 rounded-full bg-gradient-to-t blur-3xl opacity-50 ${getGateColor(summonResults[0].unit.rarity)}`}
               />
               
-              {/* The Summoning Door */}
               <motion.div
                 initial={{ y: 50 }}
                 animate={{ 
@@ -104,7 +161,7 @@ export default function SummonScreen({ state, spendGems, addUnit, rollGacha, onA
                   y: { duration: 0.5, ease: "easeOut" },
                   rotate: { delay: 0.5, duration: 1.5, repeat: Infinity, ease: "linear" }
                 }}
-                className={`relative w-48 h-72 border-4 rounded-t-full flex items-center justify-center overflow-hidden z-10 ${getDoorColor(summonResult.rarity)}`}
+                className={`relative w-48 h-72 border-4 rounded-t-full flex items-center justify-center overflow-hidden z-10 ${getDoorColor(summonResults[0].unit.rarity)}`}
               >
                 <div className="absolute inset-0 bg-black/40" />
                 <motion.div 
@@ -116,13 +173,13 @@ export default function SummonScreen({ state, spendGems, addUnit, rollGacha, onA
             </motion.div>
           )}
 
-          {phase === 'reveal' && summonResult && (
+          {phase === 'reveal' && summonResults.length > 0 && (
             <motion.div 
               key="reveal"
               initial={{ opacity: 0, scale: 0.5, y: 50 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ type: "spring", bounce: 0.5, duration: 0.8 }}
-              className="flex flex-col items-center absolute inset-0 justify-center bg-zinc-950/80 backdrop-blur-sm z-40"
+              className="flex flex-col items-center absolute inset-0 justify-center bg-zinc-950/80 backdrop-blur-sm z-40 overflow-y-auto"
             >
               <motion.div
                 initial={{ opacity: 0, scale: 2 }}
@@ -135,50 +192,34 @@ export default function SummonScreen({ state, spendGems, addUnit, rollGacha, onA
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="text-3xl font-black text-yellow-400 mb-6 uppercase tracking-widest drop-shadow-[0_0_10px_rgba(250,204,21,0.8)] z-10"
+                className="text-3xl font-black text-yellow-400 mb-2 uppercase tracking-widest drop-shadow-[0_0_10px_rgba(250,204,21,0.8)] z-10"
               >
-                New Hero!
+                {summonResults.length === 1 ? 'New Hero!' : 'Summon Complete!'}
               </motion.h2>
 
-              <div className="relative w-64 h-64 mb-6 z-10">
-                <motion.div 
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 bg-[url('https://cdn.jsdelivr.net/gh/Leem0nGames/gameassets@main/RO/magic_circle.png')] bg-contain bg-center bg-no-repeat opacity-30"
-                />
-                <motion.img 
-                  initial={{ y: 20 }}
-                  animate={{ y: [20, -10, 20] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  src={summonResult.spriteUrl} 
-                  alt={summonResult.name}
-                  className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]"
-                  style={{ imageRendering: 'pixelated' }}
-                />
+              {summonResults[0].isPity && (
+                <div className="text-sm font-bold text-pink-400 mb-2 animate-pulse">★ PITY ACTIVATED! ★</div>
+              )}
+              
+              <div className={`flex ${summonResults.length > 1 ? 'flex-wrap justify-center gap-2 max-h-[60vh] overflow-y-auto p-2' : ''} z-10`}>
+                {summonResults.map((result, idx) => (
+                  <motion.div 
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 + idx * 0.1 }}
+                    className="text-center bg-zinc-900/80 px-4 py-3 rounded-2xl border border-zinc-700 shadow-xl"
+                  >
+                    <div className="flex justify-center gap-1 mb-1">
+                      {Array.from({ length: result.unit.rarity }).map((_, i) => (
+                        <span key={i} className="text-yellow-400 text-lg">★</span>
+                      ))}
+                    </div>
+                    <div className="text-lg font-black text-white">{result.unit.name}</div>
+                    <div className="text-xs font-bold text-zinc-400">{result.unit.element}</div>
+                  </motion.div>
+                ))}
               </div>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-                className="text-center z-20 bg-zinc-900/80 px-8 py-4 rounded-2xl border border-zinc-700 shadow-xl"
-              >
-                <div className="flex justify-center gap-1 mb-2">
-                  {Array.from({ length: summonResult.rarity }).map((_, i) => (
-                    <motion.span 
-                      key={i} 
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.8 + (i * 0.1), type: "spring" }}
-                      className="text-yellow-400 text-2xl drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]"
-                    >
-                      ★
-                    </motion.span>
-                  ))}
-                </div>
-                <div className="text-3xl font-black text-white drop-shadow-md mb-1">{summonResult.name}</div>
-                <div className="text-sm font-bold text-zinc-400 uppercase tracking-widest">{summonResult.element} Element</div>
-              </motion.div>
 
               <motion.button 
                 initial={{ opacity: 0 }}
@@ -186,9 +227,9 @@ export default function SummonScreen({ state, spendGems, addUnit, rollGacha, onA
                 transition={{ delay: 1.5 }}
                 onClick={() => {
                   setPhase('idle');
-                  setSummonResult(null);
+                  setSummonResults([]);
                 }}
-                className="mt-8 px-8 py-3 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-sm border border-zinc-600 transition-colors z-20"
+                className="mt-4 px-8 py-3 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-sm border border-zinc-600 transition-colors z-20"
               >
                 Continue
               </motion.button>
