@@ -18,6 +18,8 @@ export interface EquipmentTemplate {
   description: string;
   icon: string;
   spriteUrl?: string;
+  atlasKey?: string;
+  iconIndex?: number;
 }
 
 export type SkillType = 'damage' | 'heal' | 'buff' | 'attack' | 'break' | 'support';
@@ -45,6 +47,10 @@ export interface UnitTemplate {
   spriteUrl?: string;
   skillIcon?: string;
   leaderSkill?: Skill;
+  atlasKey?: string;
+  spriteIndex?: number;
+  skillIconIndex?: number;
+  leaderSkillIndex?: number;
 }
 
 export interface StageTemplate {
