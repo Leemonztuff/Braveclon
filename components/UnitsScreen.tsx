@@ -344,10 +344,10 @@ export default function UnitsScreen({ state, setTeamMember, equipItem, unequipIt
                         {/* Skill Card */}
                         <div className="bg-zinc-800/50 rounded-xl p-3 border border-zinc-700 mb-4">
                           <div className="flex items-center gap-2 mb-1">
-                            <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-600 bg-zinc-900 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-600 bg-zinc-900 flex items-center justify-center shrink-0">
                               <AtlasSprite 
                                 atlasUrl={template.atlasKey ? ATLASES[template.atlasKey as keyof typeof ATLASES] : undefined}
-                                iconIndex={template.skillIconIndex ?? 3}
+                                iconIndex={template.skillIconIndex ?? 8}
                                 width={32}
                                 height={32}
                                 alt={template.skill.name}
@@ -396,10 +396,10 @@ export default function UnitsScreen({ state, setTeamMember, equipItem, unequipIt
                                   <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center overflow-hidden">
                                     <AtlasSprite 
                                       atlasUrl={eqTemplate?.atlasKey ? ATLASES[eqTemplate.atlasKey as keyof typeof ATLASES] : undefined}
-                                      iconIndex={eqTemplate?.iconIndex ?? 0}
+                                      iconIndex={eqTemplate?.iconIndex ?? (slot === 'weapon' ? 0 : slot === 'armor' ? 1 : 2)}
                                       width={40}
                                       height={40}
-                                      alt={eqTemplate?.name || ''}
+                                      alt={eqTemplate?.name || 'empty slot'}
                                       fallbackIcon={getPlaceholderIcon(slot)}
                                     />
                                   </div>
