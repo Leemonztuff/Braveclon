@@ -21,13 +21,21 @@ export default function FusionScreen({
   const [isFusing, setIsFusing] = useState(false);
   const [fusionResult, setFusionResult] = useState<any>(null);
 
-  const targetUnit = state.inventory.find(u => u.instanceId === targetInstanceId);
+  const safeInventory = state?.inventory || [];
+  const safeZel = state?.zel || 0;
+  
+  const targetUnit = safeInventory.find(u => u.instanceId === targetInstanceId);
   if (!targetUnit) {
     onBack();
     return null;
   }
 
   const targetTemplate = UNIT_DATABASE[targetUnit.templateId];
+  if (!targetTemplate) {
+    onBack();
+    return null;
+  }
+  
   const isMaxLevel = targetUnit.level >= targetTemplate.maxLevel;
 
   // Calculate projected stats
@@ -36,9 +44,10 @@ export default function FusionScreen({
   let cost = targetUnit.level * 100 * selectedMaterials.length;
 
   selectedMaterials.forEach(matId => {
-    const matUnit = state.inventory.find(u => u.instanceId === matId);
+    const matUnit = safeInventory.find(u => u.instanceId === matId);
     if (!matUnit) return;
     const matTemplate = UNIT_DATABASE[matUnit.templateId];
+    if (!matTemplate) return;
     
     let exp = matTemplate.rarity * 500 + matUnit.level * 50;
     if (matTemplate.element === targetTemplate.element) {
@@ -69,7 +78,7 @@ export default function FusionScreen({
 
   const handleFuse = () => {
     if (selectedMaterials.length === 0) return;
-    if (state.zel < cost) {
+    if (safeZel < cost) {
       onAlert(`Not enough Zel! You need ${cost} 💰.`);
       return;
     }
@@ -87,10 +96,10 @@ export default function FusionScreen({
     }, 1500);
   };
 
-  const availableMaterials = state.inventory.filter(u => 
-    u.instanceId !== targetInstanceId && 
-    !state.team.includes(u.instanceId)
-  );
+  const availableMaterials = safeInventory.filter(u => {
+    const inTeam = (state?.team || []).includes(u.instanceId);
+    return u.instanceId !== targetInstanceId && !inTeam && u.templateId !== targetUnit.templateId;
+  });
 
   return (
     <div className="flex flex-col h-full bg-zinc-950 relative">
@@ -214,7 +223,7 @@ export default function FusionScreen({
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-zinc-900 border-t border-zinc-800 z-20">
         <div className="flex justify-between items-center mb-3">
           <span className="text-xs font-bold text-zinc-400 uppercase">Fusion Cost</span>
-          <span className={`text-sm font-bold font-mono ${state.zel >= cost ? 'text-yellow-400' : 'text-red-400'}`}>
+          <span className={`text-sm font-bold font-mono ${safeZel >= cost ? 'text-yellow-400' : 'text-red-400'}`}>
             {cost.toLocaleString()} 💰
           </span>
         </div>

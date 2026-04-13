@@ -143,7 +143,12 @@ export default function GameApp() {
                 setTeamMember={setTeamMember}
                 equipItem={equipItem}
                 unequipItem={unequipItem}
-                onNavigateToFusion={() => setCurrentScreen('fusion')}
+                onNavigateToFusion={(unitId) => {
+                  if (unitId) {
+                    setFusionTargetId(unitId);
+                    setCurrentScreen('fusion');
+                  }
+                }}
               />
             )}
             {currentScreen === 'summon' && (
