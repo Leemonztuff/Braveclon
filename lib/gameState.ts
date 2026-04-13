@@ -12,6 +12,7 @@ export function calculateStats(template: UnitTemplate, level: number, equipment?
     atk: template.baseStats.atk + template.growthRate.atk * (level - 1),
     def: template.baseStats.def + template.growthRate.def * (level - 1),
     rec: template.baseStats.rec + template.growthRate.rec * (level - 1),
+    spd: template.baseStats.spd + template.growthRate.spd * (level - 1),
   };
 
   if (equipment && equipInventory) {
@@ -25,6 +26,7 @@ export function calculateStats(template: UnitTemplate, level: number, equipment?
           base.atk += eqTemplate.statsBonus.atk || 0;
           base.def += eqTemplate.statsBonus.def || 0;
           base.rec += eqTemplate.statsBonus.rec || 0;
+          base.spd += eqTemplate.statsBonus.spd || 0;
         }
       }
     });

@@ -1,13 +1,14 @@
 import { UnitTemplate } from '@/lib/gameData';
 
 export interface BattleUnit {
-  id: string; // unique battle id
+  id: string;
   template: UnitTemplate;
   isPlayer: boolean;
   hp: number;
   maxHp: number;
   atk: number;
   def: number;
+  spd: number;
   bbGauge: number;
   maxBb: number;
   isDead: boolean;

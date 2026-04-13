@@ -4,7 +4,8 @@ export interface Stats {
   hp: number;
   atk: number;
   def: number;
-  rec: number; // Recovery, affects healing
+  rec: number;
+  spd: number;
 }
 
 export type EquipSlot = 'weapon' | 'armor' | 'accessory';
@@ -74,8 +75,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Vargas',
     element: 'Fire',
     rarity: 3,
-    baseStats: { hp: 1200, atk: 400, def: 300, rec: 200 },
-    growthRate: { hp: 40, atk: 15, def: 10, rec: 8 },
+    baseStats: { hp: 1200, atk: 400, def: 300, rec: 200, spd: 100 },
+    growthRate: { hp: 40, atk: 15, def: 10, rec: 8, spd: 5 },
     maxLevel: 40,
     skill: { id: 's1', name: 'Flare Ride', type: 'damage', description: 'Fire damage to all enemies', power: 1.5, cost: 20 },
     spriteUrl: `${BASE_URL}/abbys_sprite_001.png`
@@ -85,8 +86,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Selena',
     element: 'Water',
     rarity: 3,
-    baseStats: { hp: 1100, atk: 350, def: 350, rec: 300 },
-    growthRate: { hp: 35, atk: 12, def: 12, rec: 10 },
+    baseStats: { hp: 1100, atk: 350, def: 350, rec: 300, spd: 95 },
+    growthRate: { hp: 35, atk: 12, def: 12, rec: 10, spd: 4 },
     maxLevel: 40,
     skill: { id: 's2', name: 'Ice Dance', type: 'heal', description: 'Heals all allies', power: 1.2, cost: 25 },
     spriteUrl: `${BASE_URL}/abbys_sprite_002.png`
@@ -96,8 +97,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Lance',
     element: 'Earth',
     rarity: 3,
-    baseStats: { hp: 1300, atk: 300, def: 400, rec: 150 },
-    growthRate: { hp: 45, atk: 10, def: 15, rec: 5 },
+    baseStats: { hp: 1300, atk: 300, def: 400, rec: 150, spd: 85 },
+    growthRate: { hp: 45, atk: 10, def: 15, rec: 5, spd: 3 },
     maxLevel: 40,
     skill: { id: 's3', name: 'Earth Pike', type: 'damage', description: 'Earth damage to all enemies', power: 1.5, cost: 20 },
     spriteUrl: `${BASE_URL}/abbys_sprite_003.png`
@@ -107,8 +108,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Eze',
     element: 'Thunder',
     rarity: 3,
-    baseStats: { hp: 1000, atk: 450, def: 250, rec: 200 },
-    growthRate: { hp: 30, atk: 18, def: 8, rec: 8 },
+    baseStats: { hp: 1000, atk: 450, def: 250, rec: 200, spd: 110 },
+    growthRate: { hp: 30, atk: 18, def: 8, rec: 8, spd: 6 },
     maxLevel: 40,
     skill: { id: 's4', name: 'Lightning Strike', type: 'damage', description: 'Thunder damage to all enemies', power: 1.6, cost: 22 },
     spriteUrl: `${BASE_URL}/abbys_sprite_004.png`
@@ -118,8 +119,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Atro',
     element: 'Light',
     rarity: 3,
-    baseStats: { hp: 1150, atk: 380, def: 380, rec: 250 },
-    growthRate: { hp: 38, atk: 14, def: 14, rec: 9 },
+    baseStats: { hp: 1150, atk: 380, def: 380, rec: 250, spd: 90 },
+    growthRate: { hp: 38, atk: 14, def: 14, rec: 9, spd: 4 },
     maxLevel: 40,
     skill: { id: 's5', name: 'Holy Light', type: 'damage', description: 'Light damage to all enemies', power: 1.5, cost: 20 },
     spriteUrl: `${BASE_URL}/abbys_sprite_005.png`
@@ -129,8 +130,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Magress',
     element: 'Dark',
     rarity: 3,
-    baseStats: { hp: 1400, atk: 320, def: 450, rec: 100 },
-    growthRate: { hp: 50, atk: 11, def: 16, rec: 4 },
+    baseStats: { hp: 1400, atk: 320, def: 450, rec: 100, spd: 80 },
+    growthRate: { hp: 50, atk: 11, def: 16, rec: 4, spd: 3 },
     maxLevel: 40,
     skill: { id: 's6', name: 'Dark Guard', type: 'damage', description: 'Dark damage to all enemies', power: 1.4, cost: 20 },
     spriteUrl: `${BASE_URL}/abbys_sprite_006.png`
@@ -140,8 +141,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Lava',
     element: 'Fire',
     rarity: 4,
-    baseStats: { hp: 1500, atk: 500, def: 400, rec: 300 },
-    growthRate: { hp: 45, atk: 18, def: 12, rec: 10 },
+    baseStats: { hp: 1500, atk: 500, def: 400, rec: 300, spd: 105 },
+    growthRate: { hp: 45, atk: 18, def: 12, rec: 10, spd: 5 },
     maxLevel: 60,
     skill: { id: 's7', name: 'Flame Breath', type: 'damage', description: 'Fire damage to all enemies', power: 1.7, cost: 24 },
     spriteUrl: `${BASE_URL}/abbys_sprite_007.png`
@@ -151,8 +152,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Mega',
     element: 'Water',
     rarity: 4,
-    baseStats: { hp: 1400, atk: 450, def: 450, rec: 400 },
-    growthRate: { hp: 40, atk: 15, def: 15, rec: 12 },
+    baseStats: { hp: 1400, atk: 450, def: 450, rec: 400, spd: 100 },
+    growthRate: { hp: 40, atk: 15, def: 15, rec: 12, spd: 5 },
     maxLevel: 60,
     skill: { id: 's8', name: 'Tidal Wave', type: 'damage', description: 'Water damage to all enemies', power: 1.6, cost: 22 },
     spriteUrl: `${BASE_URL}/abbys_sprite_008.png`
@@ -162,8 +163,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Douglas',
     element: 'Earth',
     rarity: 4,
-    baseStats: { hp: 1600, atk: 400, def: 500, rec: 200 },
-    growthRate: { hp: 50, atk: 12, def: 18, rec: 6 },
+    baseStats: { hp: 1600, atk: 400, def: 500, rec: 200, spd: 85 },
+    growthRate: { hp: 50, atk: 12, def: 18, rec: 6, spd: 4 },
     maxLevel: 60,
     skill: { id: 's9', name: 'Gatling Seed', type: 'damage', description: 'Earth damage to all enemies', power: 1.8, cost: 28 },
     spriteUrl: `${BASE_URL}/abbys_sprite_009.png`
@@ -173,8 +174,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Emilia',
     element: 'Thunder',
     rarity: 4,
-    baseStats: { hp: 1300, atk: 550, def: 350, rec: 300 },
-    growthRate: { hp: 35, atk: 22, def: 10, rec: 10 },
+    baseStats: { hp: 1300, atk: 550, def: 350, rec: 300, spd: 115 },
+    growthRate: { hp: 35, atk: 22, def: 10, rec: 10, spd: 6 },
     maxLevel: 60,
     skill: { id: 's10', name: 'Spark Rush', type: 'damage', description: 'Thunder damage to all enemies', power: 1.9, cost: 26 },
     spriteUrl: `${BASE_URL}/abbys_sprite_010.png`
@@ -184,8 +185,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Will',
     element: 'Light',
     rarity: 4,
-    baseStats: { hp: 1450, atk: 480, def: 480, rec: 350 },
-    growthRate: { hp: 42, atk: 16, def: 16, rec: 11 },
+    baseStats: { hp: 1450, atk: 480, def: 480, rec: 350, spd: 95 },
+    growthRate: { hp: 42, atk: 16, def: 16, rec: 11, spd: 5 },
     maxLevel: 60,
     skill: { id: 's11', name: 'Shining Slash', type: 'damage', description: 'Light damage to all enemies', power: 1.7, cost: 24 },
     spriteUrl: `${BASE_URL}/abbys_sprite_011.png`
@@ -195,8 +196,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Alice',
     element: 'Dark',
     rarity: 4,
-    baseStats: { hp: 1700, atk: 420, def: 550, rec: 150 },
-    growthRate: { hp: 55, atk: 14, def: 20, rec: 5 },
+    baseStats: { hp: 1700, atk: 420, def: 550, rec: 150, spd: 88 },
+    growthRate: { hp: 55, atk: 14, def: 20, rec: 5, spd: 4 },
     maxLevel: 60,
     skill: { id: 's12', name: 'Blood Drain', type: 'damage', description: 'Dark damage to all enemies', power: 1.6, cost: 22 },
     spriteUrl: `${BASE_URL}/abbys_sprite_012.png`
@@ -206,8 +207,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Lario',
     element: 'Earth',
     rarity: 3,
-    baseStats: { hp: 1250, atk: 350, def: 350, rec: 250 },
-    growthRate: { hp: 42, atk: 12, def: 12, rec: 8 },
+    baseStats: { hp: 1250, atk: 350, def: 350, rec: 250, spd: 92 },
+    growthRate: { hp: 42, atk: 12, def: 12, rec: 8, spd: 4 },
     maxLevel: 40,
     skill: { id: 's13', name: 'Arrow Rain', type: 'damage', description: 'Earth damage to all enemies', power: 1.4, cost: 18 },
     spriteUrl: `${BASE_URL}/abbys_sprite_013.png`
@@ -217,8 +218,8 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Mifune',
     element: 'Dark',
     rarity: 3,
-    baseStats: { hp: 900, atk: 500, def: 200, rec: 150 },
-    growthRate: { hp: 25, atk: 25, def: 5, rec: 5 },
+    baseStats: { hp: 900, atk: 500, def: 200, rec: 150, spd: 120 },
+    growthRate: { hp: 25, atk: 25, def: 5, rec: 5, spd: 7 },
     maxLevel: 40,
     skill: { id: 's14', name: 'Demon Slash', type: 'damage', description: 'Massive Dark damage to one enemy', power: 2.5, cost: 25 },
     spriteUrl: `${BASE_URL}/abbys_sprite_014.png`
@@ -228,11 +229,44 @@ export const UNIT_DATABASE: Record<string, UnitTemplate> = {
     name: 'Luna',
     element: 'Light',
     rarity: 3,
-    baseStats: { hp: 1100, atk: 400, def: 300, rec: 350 },
-    growthRate: { hp: 35, atk: 15, def: 10, rec: 12 },
+    baseStats: { hp: 1100, atk: 400, def: 300, rec: 350, spd: 98 },
+    growthRate: { hp: 35, atk: 15, def: 10, rec: 12, spd: 5 },
     maxLevel: 40,
     skill: { id: 's15', name: 'Moonlight', type: 'heal', description: 'Heals all allies and removes status ailments', power: 1.5, cost: 30 },
     spriteUrl: `${BASE_URL}/abbys_sprite_015.png`
+  },
+  'u16': {
+    id: 'u16',
+    name: 'Soleil',
+    element: 'Light',
+    rarity: 5,
+    baseStats: { hp: 2200, atk: 650, def: 500, rec: 450, spd: 110 },
+    growthRate: { hp: 60, atk: 25, def: 18, rec: 15, spd: 7 },
+    maxLevel: 80,
+    skill: { id: 's16', name: 'Radiant Judgment', type: 'damage', description: 'Massive Light damage to all enemies', power: 2.2, cost: 28 },
+    spriteUrl: `${BASE_URL}/abbys_sprite_011.png`
+  },
+  'u17': {
+    id: 'u17',
+    name: 'Zeru',
+    element: 'Dark',
+    rarity: 5,
+    baseStats: { hp: 2000, atk: 700, def: 450, rec: 350, spd: 125 },
+    growthRate: { hp: 55, atk: 28, def: 15, rec: 12, spd: 8 },
+    maxLevel: 80,
+    skill: { id: 's17', name: 'Void Collapse', type: 'damage', description: 'Massive Dark damage to all enemies', power: 2.3, cost: 30 },
+    spriteUrl: `${BASE_URL}/abbys_sprite_012.png`
+  },
+  'u18': {
+    id: 'u18',
+    name: 'Ronan',
+    element: 'Water',
+    rarity: 5,
+    baseStats: { hp: 2400, atk: 550, def: 600, rec: 500, spd: 95 },
+    growthRate: { hp: 70, atk: 20, def: 22, rec: 18, spd: 5 },
+    maxLevel: 80,
+    skill: { id: 's18', name: 'Abyssal Tide', type: 'damage', description: 'Massive Water damage to all enemies', power: 2.0, cost: 26 },
+    spriteUrl: `${BASE_URL}/abbys_sprite_008.png`
   }
 };
 
@@ -242,8 +276,8 @@ export const ENEMIES: UnitTemplate[] = [
     name: 'Slime',
     element: 'Water',
     rarity: 1,
-    baseStats: { hp: 500, atk: 100, def: 50, rec: 0 },
-    growthRate: { hp: 0, atk: 0, def: 0, rec: 0 },
+    baseStats: { hp: 500, atk: 100, def: 50, rec: 0, spd: 50 },
+    growthRate: { hp: 0, atk: 0, def: 0, rec: 0, spd: 0 },
     maxLevel: 1,
     skill: { id: 'es1', name: 'Tackle', type: 'damage', description: 'Basic attack', power: 1, cost: 100 },
     spriteUrl: `${BASE_URL}/abbys_sprite_016.png`
@@ -253,8 +287,8 @@ export const ENEMIES: UnitTemplate[] = [
     name: 'Goblin',
     element: 'Earth',
     rarity: 1,
-    baseStats: { hp: 800, atk: 150, def: 80, rec: 0 },
-    growthRate: { hp: 0, atk: 0, def: 0, rec: 0 },
+    baseStats: { hp: 800, atk: 150, def: 80, rec: 0, spd: 70 },
+    growthRate: { hp: 0, atk: 0, def: 0, rec: 0, spd: 0 },
     maxLevel: 1,
     skill: { id: 'es2', name: 'Club', type: 'damage', description: 'Basic attack', power: 1.2, cost: 100 },
     spriteUrl: `${BASE_URL}/abbys_sprite_017.png`
@@ -264,10 +298,10 @@ export const ENEMIES: UnitTemplate[] = [
     name: 'Orc',
     element: 'Fire',
     rarity: 2,
-    baseStats: { hp: 1200, atk: 200, def: 120, rec: 0 },
-    growthRate: { hp: 0, atk: 0, def: 0, rec: 0 },
+    baseStats: { hp: 1200, atk: 200, def: 120, rec: 0, spd: 60 },
+    growthRate: { hp: 0, atk: 0, def: 0, rec: 0, spd: 0 },
     maxLevel: 1,
-    skill: { id: 'es3', name: 'Smash', type: 'damage', description: 'Basic attack', power: 1.3, cost: 100 },
+    skill: { id: 'es3', name: 'Smash', type: 'damage', description: 'Basic attack', power: 1.3, cost: 30 },
     spriteUrl: `${BASE_URL}/abbys_sprite_018.png`
   },
   {
@@ -275,10 +309,10 @@ export const ENEMIES: UnitTemplate[] = [
     name: 'Harpy',
     element: 'Thunder',
     rarity: 2,
-    baseStats: { hp: 900, atk: 250, def: 90, rec: 0 },
-    growthRate: { hp: 0, atk: 0, def: 0, rec: 0 },
+    baseStats: { hp: 900, atk: 250, def: 90, rec: 0, spd: 90 },
+    growthRate: { hp: 0, atk: 0, def: 0, rec: 0, spd: 0 },
     maxLevel: 1,
-    skill: { id: 'es4', name: 'Claw', type: 'damage', description: 'Basic attack', power: 1.4, cost: 100 },
+    skill: { id: 'es4', name: 'Claw', type: 'damage', description: 'Basic attack', power: 1.4, cost: 30 },
     spriteUrl: `${BASE_URL}/abbys_sprite_019.png`
   },
   {
@@ -286,10 +320,10 @@ export const ENEMIES: UnitTemplate[] = [
     name: 'Skeleton',
     element: 'Dark',
     rarity: 2,
-    baseStats: { hp: 1000, atk: 180, def: 150, rec: 0 },
-    growthRate: { hp: 0, atk: 0, def: 0, rec: 0 },
+    baseStats: { hp: 1000, atk: 180, def: 150, rec: 0, spd: 65 },
+    growthRate: { hp: 0, atk: 0, def: 0, rec: 0, spd: 0 },
     maxLevel: 1,
-    skill: { id: 'es5', name: 'Bone Strike', type: 'damage', description: 'Basic attack', power: 1.2, cost: 100 },
+    skill: { id: 'es5', name: 'Bone Strike', type: 'damage', description: 'Basic attack', power: 1.2, cost: 30 },
     spriteUrl: `${BASE_URL}/abbys_sprite_020.png`
   },
   {
@@ -297,11 +331,33 @@ export const ENEMIES: UnitTemplate[] = [
     name: 'Angel',
     element: 'Light',
     rarity: 2,
-    baseStats: { hp: 1100, atk: 190, def: 140, rec: 0 },
-    growthRate: { hp: 0, atk: 0, def: 0, rec: 0 },
+    baseStats: { hp: 1100, atk: 190, def: 140, rec: 0, spd: 75 },
+    growthRate: { hp: 0, atk: 0, def: 0, rec: 0, spd: 0 },
     maxLevel: 1,
-    skill: { id: 'es6', name: 'Holy Ray', type: 'damage', description: 'Basic attack', power: 1.3, cost: 100 },
+    skill: { id: 'es6', name: 'Holy Ray', type: 'damage', description: 'Basic attack', power: 1.3, cost: 30 },
     spriteUrl: `${BASE_URL}/abbys_sprite_021.png`
+  },
+  {
+    id: 'e7',
+    name: 'Orc Lord',
+    element: 'Fire',
+    rarity: 3,
+    baseStats: { hp: 2500, atk: 350, def: 250, rec: 0, spd: 55 },
+    growthRate: { hp: 0, atk: 0, def: 0, rec: 0, spd: 0 },
+    maxLevel: 1,
+    skill: { id: 'es7', name: 'Inferno', type: 'damage', description: 'Fire damage to all enemies', power: 1.5, cost: 25 },
+    spriteUrl: `${BASE_URL}/abbys_sprite_018.png`
+  },
+  {
+    id: 'e8',
+    name: 'Dark Knight',
+    element: 'Dark',
+    rarity: 3,
+    baseStats: { hp: 2200, atk: 400, def: 200, rec: 0, spd: 80 },
+    growthRate: { hp: 0, atk: 0, def: 0, rec: 0, spd: 0 },
+    maxLevel: 1,
+    skill: { id: 'es8', name: 'Shadow Slash', type: 'damage', description: 'Dark damage to all enemies', power: 1.6, cost: 25 },
+    spriteUrl: `${BASE_URL}/abbys_sprite_014.png`
   }
 ];
 
@@ -310,6 +366,12 @@ export const STAGES: StageTemplate[] = [
   { id: 2, name: "Mistral", area: "Cave of Flames", energy: 4, description: "A hot challenge.", enemies: ['e3', 'e3', 'e1'], expReward: 80, zelReward: 350 },
   { id: 3, name: "Morgan", area: "Destroyed Cathedral", energy: 5, description: "Ruins of the past.", enemies: ['e5', 'e6', 'e5'], expReward: 120, zelReward: 500 },
   { id: 4, name: "St. Lamia", area: "Blood Forest", energy: 6, description: "Beware the harpies.", enemies: ['e4', 'e2', 'e4'], expReward: 180, zelReward: 800 },
+  { id: 5, name: "Mistral", area: "Ancient Ruins", energy: 7, description: "Mysterious ruins await.", enemies: ['e1', 'e3', 'e2'], expReward: 250, zelReward: 1100 },
+  { id: 6, name: "Morgan", area: "Shadow Plains", energy: 8, description: "Darkness spreads.", enemies: ['e5', 'e2', 'e5'], expReward: 350, zelReward: 1500 },
+  { id: 7, name: "Morgan", area: "Holy Sanctuary", energy: 9, description: "Defend the light.", enemies: ['e6', 'e3', 'e6'], expReward: 450, zelReward: 2000 },
+  { id: 8, name: "St. Lamia", area: "Demon Valley", energy: 10, description: "Enter the demon realm.", enemies: ['e7', 'e8', 'e4'], expReward: 600, zelReward: 2800 },
+  { id: 9, name: "St. Lamia", area: "Dragon's Lair", energy: 12, description: "The dragon awaits.", enemies: ['e7', 'e7', 'e8'], expReward: 800, zelReward: 3500 },
+  { id: 10, name: "Final Gate", area: "Gate of Judgment", energy: 15, description: "Face the ultimate challenge.", enemies: ['e7', 'e8', 'e7', 'e8'], expReward: 1200, zelReward: 5000 },
 ];
 
 export const GACHA_POOL: GachaRate[] = [
@@ -320,6 +382,8 @@ export const GACHA_POOL: GachaRate[] = [
   // 4-star units (Rare) - Weight 20
   { unitId: 'u7', weight: 20 }, { unitId: 'u8', weight: 20 }, { unitId: 'u9', weight: 20 },
   { unitId: 'u10', weight: 20 }, { unitId: 'u11', weight: 20 }, { unitId: 'u12', weight: 20 },
+  // 5-star units (Legendary) - Weight 3
+  { unitId: 'u16', weight: 3 }, { unitId: 'u17', weight: 3 }, { unitId: 'u18', weight: 3 },
 ];
 
 export const QR_REWARD_TABLE: QRRewardTable[] = [
@@ -332,10 +396,16 @@ export const QR_REWARD_TABLE: QRRewardTable[] = [
 export const EQUIPMENT_DATABASE: Record<string, EquipmentTemplate> = {
   'eq_w1': { id: 'eq_w1', name: 'Brave Sword', type: 'weapon', statsBonus: { atk: 50 }, description: 'A basic sword for brave warriors.', icon: '⚔️' },
   'eq_w2': { id: 'eq_w2', name: 'Flame Blade', type: 'weapon', statsBonus: { atk: 120, hp: 100 }, description: 'A sword imbued with fire.', icon: '🗡️' },
+  'eq_w3': { id: 'eq_w3', name: 'Thunder Axe', type: 'weapon', statsBonus: { atk: 180, spd: 10 }, description: 'A powerful thunder axe.', icon: '⚡' },
+  'eq_w4': { id: 'eq_w4', name: 'Sacred Blade', type: 'weapon', statsBonus: { atk: 250, rec: 50 }, description: 'A holy blade of light.', icon: '✨' },
   'eq_a1': { id: 'eq_a1', name: 'Leather Armor', type: 'armor', statsBonus: { def: 50, hp: 200 }, description: 'Basic protection.', icon: '🛡️' },
   'eq_a2': { id: 'eq_a2', name: 'Knight Shield', type: 'armor', statsBonus: { def: 150, hp: 500 }, description: 'Heavy shield for knights.', icon: '🛡️' },
+  'eq_a3': { id: 'eq_a3', name: 'Dragon Mail', type: 'armor', statsBonus: { def: 250, hp: 800 }, description: 'Armor forged from dragon scales.', icon: '🐉' },
+  'eq_a4': { id: 'eq_a4', name: 'Holy Robe', type: 'armor', statsBonus: { def: 180, rec: 150 }, description: 'Sacred protective robes.', icon: '👘' },
   'eq_ac1': { id: 'eq_ac1', name: 'Health Ring', type: 'accessory', statsBonus: { hp: 500, rec: 100 }, description: 'Boosts vitality.', icon: '💍' },
   'eq_ac2': { id: 'eq_ac2', name: 'Power Amulet', type: 'accessory', statsBonus: { atk: 100, def: 50 }, description: 'Increases overall power.', icon: '📿' },
+  'eq_ac3': { id: 'eq_ac3', name: 'Speed Boots', type: 'accessory', statsBonus: { spd: 30, atk: 50 }, description: 'Increases agility.', icon: '👢' },
+  'eq_ac4': { id: 'eq_ac4', name: 'Guardian Charm', type: 'accessory', statsBonus: { hp: 800, def: 100 }, description: 'Protective talisman.', icon: '🧿' },
 };
 
 export function getExpForLevel(level: number): number {
@@ -343,18 +413,18 @@ export function getExpForLevel(level: number): number {
 }
 
 export function getElementMultiplier(attacker: Element, defender: Element): number {
-  if (attacker === 'Fire' && defender === 'Earth') return 2.0;
-  if (attacker === 'Earth' && defender === 'Thunder') return 2.0;
-  if (attacker === 'Thunder' && defender === 'Water') return 2.0;
-  if (attacker === 'Water' && defender === 'Fire') return 2.0;
+  if (attacker === 'Fire' && defender === 'Earth') return 1.5;
+  if (attacker === 'Earth' && defender === 'Thunder') return 1.5;
+  if (attacker === 'Thunder' && defender === 'Water') return 1.5;
+  if (attacker === 'Water' && defender === 'Fire') return 1.5;
   
-  if (attacker === 'Earth' && defender === 'Fire') return 0.5;
-  if (attacker === 'Thunder' && defender === 'Earth') return 0.5;
-  if (attacker === 'Water' && defender === 'Thunder') return 0.5;
-  if (attacker === 'Fire' && defender === 'Water') return 0.5;
+  if (attacker === 'Earth' && defender === 'Fire') return 0.75;
+  if (attacker === 'Thunder' && defender === 'Earth') return 0.75;
+  if (attacker === 'Water' && defender === 'Thunder') return 0.75;
+  if (attacker === 'Fire' && defender === 'Water') return 0.75;
 
-  if (attacker === 'Light' && defender === 'Dark') return 2.0;
-  if (attacker === 'Dark' && defender === 'Light') return 2.0;
+  if (attacker === 'Light' && defender === 'Dark') return 1.5;
+  if (attacker === 'Dark' && defender === 'Light') return 1.5;
 
   return 1.0;
 }
