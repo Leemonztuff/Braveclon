@@ -111,6 +111,215 @@ export default function BattleScreen({ state, stageId, onEnd }: { state: PlayerS
     };
   };
 
+  const executeAttack = async (
+    attacker: BattleUnit,
+    target: BattleUnit,
+    isPlayer: boolean,
+    isBb: boolean,
+    currentPlayer: BattleUnit[],
+    currentEnemies: BattleUnit[]
+  ): Promise<{ player: BattleUnit[], enemies: BattleUnit[] }> => {
+    let newPlayer = [...currentPlayer];
+    let newEnemies = [...currentEnemies];
+    const skill = attacker.template.skill;
+    const skillType = skill.type;
+    
+    if (isPlayer && !isBb) {
+      const attackerIdx = newPlayer.findIndex(p => p.id === attacker.id);
+      if (attackerIdx !== -1) {
+        newPlayer[attackerIdx] = {
+          ...newPlayer[attackerIdx],
+          bbGauge: Math.min(newPlayer[attackerIdx].maxBb, newPlayer[attackerIdx].bbGauge + 3)
+        };
+      }
+    }
+
+    if (isBb) {
+      const attackerIdx = isPlayer ? newPlayer.findIndex(p => p.id === attacker.id) : newEnemies.findIndex(e => e.id === attacker.id);
+      if (attackerIdx !== -1) {
+        if (isPlayer) newPlayer[attackerIdx] = { ...newPlayer[attackerIdx], bbGauge: 0, actionState: 'skill' };
+        else newEnemies[attackerIdx] = { ...newEnemies[attackerIdx], bbGauge: 0, actionState: 'skill' };
+      }
+      
+      if (skillType === 'heal') {
+        const healPower = Math.floor(attacker.atk * skill.power);
+        if (isPlayer) {
+          newPlayer = newPlayer.map(p => {
+            if (!p.isDead) {
+              const newHp = Math.min(p.maxHp, p.hp + healPower);
+              addFloatingDamage(p.id, healPower, true, false);
+              return { ...p, hp: newHp };
+            }
+            return p;
+          });
+          addLog(`${attacker.template.name} heals all allies for ${healPower} HP!`);
+        } else {
+          newEnemies = newEnemies.map(e => {
+            if (!e.isDead) {
+              const newHp = Math.min(e.maxHp, e.hp + healPower);
+              addFloatingDamage(e.id, healPower, true, false);
+              return { ...e, hp: newHp };
+            }
+            return e;
+          });
+          addLog(`${attacker.template.name} heals for ${healPower} HP!`);
+        }
+        
+        setBbCutInUnit(attacker);
+        playSound('bb_cast');
+        await new Promise(r => setTimeout(r, 1500));
+        setBbCutInUnit(null);
+      } else {
+        const elementMultiplier = getElementMultiplier(attacker.template.element, target.template.element);
+        const isWeakness = elementMultiplier > 1.0;
+        const powerMultiplier = skill.power;
+        let rawDamage = Math.max(1, (attacker.atk * powerMultiplier) - (target.def * 0.5));
+        let finalDamage = Math.floor(rawDamage * elementMultiplier);
+
+        setPlayerUnits(isPlayer ? newPlayer : prev => prev);
+        setEnemyUnits(!isPlayer ? newEnemies : prev => prev);
+        
+        setBbCutInUnit(attacker);
+        playSound('bb_cast');
+        await new Promise(r => setTimeout(r, 1500));
+        setBbCutInUnit(null);
+        setBbFlash(true);
+        setTimeout(() => setBbFlash(false), 150);
+        await new Promise(r => setTimeout(r, 200));
+
+        if (isPlayer) {
+          newEnemies = newEnemies.map(e => {
+            if (e.id === target.id) {
+              const newHp = Math.max(0, e.hp - finalDamage);
+              addFloatingDamage(e.id, finalDamage, false, isWeakness);
+              return { ...e, hp: newHp, isDead: newHp <= 0, actionState: 'bb_hurt', isWeaknessHit: isWeakness };
+            }
+            return e;
+          });
+          setEnemyUnits(newEnemies);
+          setBbHitEffect({ targetId: target.id, element: attacker.template.element });
+          playSound('bb_hit');
+          if (isWeakness) setTimeout(() => playSound('weakness'), 100);
+          setTimeout(() => setBbHitEffect(null), 800);
+        } else {
+          newPlayer = newPlayer.map(p => {
+            if (p.id === target.id) {
+              const newHp = Math.max(0, p.hp - finalDamage);
+              addFloatingDamage(p.id, finalDamage, false, isWeakness);
+              const newBb = Math.min(p.maxBb, p.bbGauge + 3);
+              return { ...p, hp: newHp, isDead: newHp <= 0, bbGauge: newBb, actionState: 'bb_hurt', isWeaknessHit: isWeakness };
+            }
+            return p;
+          });
+          setPlayerUnits(newPlayer);
+          setBbHitEffect({ targetId: target.id, element: attacker.template.element });
+          playSound('bb_hit');
+          if (isWeakness) setTimeout(() => playSound('weakness'), 100);
+          setTimeout(() => setBbHitEffect(null), 800);
+        }
+
+        addLog(`${attacker.template.name} uses ${skill.name}! ${finalDamage} dmg! ${isWeakness ? '(Weakness!)' : ''}`);
+      }
+    } else {
+      const elementMultiplier = getElementMultiplier(attacker.template.element, target.template.element);
+      const isWeakness = elementMultiplier > 1.0;
+      let rawDamage = Math.max(1, attacker.atk - (target.def * 0.5));
+      let finalDamage = Math.floor(rawDamage * elementMultiplier);
+
+      if (isPlayer) {
+        newPlayer = newPlayer.map(p => {
+          if (p.id === attacker.id) return { ...p, actionState: 'attacking' };
+          return p;
+        });
+        setPlayerUnits(newPlayer);
+      } else {
+        newEnemies = newEnemies.map(e => {
+          if (e.id === attacker.id) return { ...e, actionState: 'attacking' };
+          return e;
+        });
+        setEnemyUnits(newEnemies);
+      }
+      
+      await new Promise(r => setTimeout(r, 200));
+
+      if (isPlayer) {
+        newEnemies = newEnemies.map(e => {
+          if (e.id === target.id) {
+            const newHp = Math.max(0, e.hp - finalDamage);
+            addFloatingDamage(e.id, finalDamage, false, isWeakness);
+            return { ...e, hp: newHp, isDead: newHp <= 0, actionState: 'hurt', isWeaknessHit: isWeakness };
+          }
+          return e;
+        });
+        setEnemyUnits(newEnemies);
+        
+        const attackerIdx = newPlayer.findIndex(p => p.id === attacker.id);
+        if (attackerIdx !== -1) {
+          newPlayer[attackerIdx] = {
+            ...newPlayer[attackerIdx],
+            bbGauge: Math.min(newPlayer[attackerIdx].maxBb, newPlayer[attackerIdx].bbGauge + 3),
+            actionState: 'idle'
+          };
+        }
+        setPlayerUnits(newPlayer);
+        
+        if (isWeakness) playSound('weakness');
+        else playSound('hit');
+      } else {
+        newPlayer = newPlayer.map(p => {
+          if (p.id === target.id) {
+            const newHp = Math.max(0, p.hp - finalDamage);
+            addFloatingDamage(p.id, finalDamage, false, isWeakness);
+            const newBb = Math.min(p.maxBb, p.bbGauge + 3);
+            return { ...p, hp: newHp, isDead: newHp <= 0, bbGauge: newBb, actionState: 'hurt', isWeaknessHit: isWeakness };
+          }
+          return p;
+        });
+        setPlayerUnits(newPlayer);
+        
+        const attackerIdx = newEnemies.findIndex(e => e.id === attacker.id);
+        if (attackerIdx !== -1) {
+          newEnemies[attackerIdx] = { ...newEnemies[attackerIdx], actionState: 'idle' };
+        }
+        setEnemyUnits(newEnemies);
+        
+        if (isWeakness) playSound('weakness');
+        else playSound('hit');
+      }
+
+      addLog(`${attacker.template.name} attacks ${target.template.name} for ${finalDamage} dmg! ${isWeakness ? '(Weakness!)' : ''}`);
+    }
+
+    await new Promise(r => setTimeout(r, 400));
+
+    if (isPlayer) {
+      newPlayer = newPlayer.map(p => {
+        if (p.id === attacker.id) return { ...p, queuedBb: false, actionState: 'idle' };
+        return p;
+      });
+      newEnemies = newEnemies.map(e => {
+        if (e.id === target.id) return { ...e, actionState: e.isDead ? 'dead' : 'idle', isWeaknessHit: false };
+        return e;
+      });
+    } else {
+      newEnemies = newEnemies.map(e => {
+        if (e.id === attacker.id) return { ...e, queuedBb: false, actionState: 'idle' };
+        return e;
+      });
+      newPlayer = newPlayer.map(p => {
+        if (p.id === target.id) return { ...p, actionState: p.isDead ? 'dead' : 'idle', isWeaknessHit: false };
+        return p;
+      });
+    }
+    
+    setPlayerUnits(newPlayer);
+    setEnemyUnits(newEnemies);
+    
+    await new Promise(r => setTimeout(r, 100));
+
+    return { player: newPlayer, enemies: newEnemies };
+  };
+
   const executeTurn = async () => {
     if (turnState !== 'player_input') return;
     setTurnState('executing');
@@ -128,214 +337,22 @@ export default function BattleScreen({ state, stageId, onEnd }: { state: PlayerS
       
       const target = targets[0];
       const isBb = attacker.queuedBb;
-      const skill = attacker.template.skill;
-      const skillType = skill.type;
       
-      if (isPlayer && !isBb && attacker.bbGauge < attacker.maxBb) {
-        attacker.bbGauge = Math.min(attacker.maxBb, attacker.bbGauge + 3);
-      }
+      const result = await executeAttack(attacker, target, isPlayer, isBb, currentPlayer, currentEnemies);
+      currentPlayer = result.player;
+      currentEnemies = result.enemies;
 
-      if (isBb) {
-        attacker.bbGauge = 0;
-        
-        if (skillType === 'heal') {
-          const healPower = Math.floor(attacker.atk * skill.power);
-          if (isPlayer) {
-            const alivePlayers = currentPlayer.filter(p => !p.isDead);
-            currentPlayer = currentPlayer.map(p => {
-              if (!p.isDead) {
-                const newHp = Math.min(p.maxHp, p.hp + healPower);
-                addFloatingDamage(p.id, healPower, true, false);
-                return { ...p, hp: newHp };
-              }
-              return p;
-            });
-            setPlayerUnits([...currentPlayer]);
-            addLog(`${attacker.template.name} heals all allies for ${healPower} HP!`);
-          } else {
-            currentEnemies = currentEnemies.map(e => {
-              if (!e.isDead) {
-                const newHp = Math.min(e.maxHp, e.hp + healPower);
-                addFloatingDamage(e.id, healPower, true, false);
-                return { ...e, hp: newHp };
-              }
-              return e;
-            });
-            setEnemyUnits([...currentEnemies]);
-            addLog(`${attacker.template.name} heals for ${healPower} HP!`);
-          }
-          
-          setBbCutInUnit(attacker);
-          playSound('bb_cast');
-          await new Promise(r => setTimeout(r, 1500));
-          setBbCutInUnit(null);
-        } else {
-          const elementMultiplier = getElementMultiplier(attacker.template.element, target.template.element);
-          const isWeakness = elementMultiplier > 1.0;
-          const powerMultiplier = skill.power;
-          
-          let rawDamage = Math.max(1, (attacker.atk * powerMultiplier) - (target.def * 0.5));
-          let finalDamage = Math.floor(rawDamage * elementMultiplier);
-
-          if (isPlayer) {
-            currentPlayer = currentPlayer.map((p, idx) => {
-              if (p.id === attacker.id) return { ...p, actionState: 'skill' as const };
-              return p;
-            });
-            setPlayerUnits([...currentPlayer]);
-          } else {
-            currentEnemies = currentEnemies.map((e, idx) => {
-              if (e.id === attacker.id) return { ...e, actionState: 'skill' as const };
-              return e;
-            });
-            setEnemyUnits([...currentEnemies]);
-          }
-
-          setBbCutInUnit(attacker);
-          playSound('bb_cast');
-          await new Promise(r => setTimeout(r, 1500));
-          setBbCutInUnit(null);
-          setBbFlash(true);
-          setTimeout(() => setBbFlash(false), 150);
-          await new Promise(r => setTimeout(r, 200));
-
-          if (isPlayer) {
-            currentEnemies = currentEnemies.map((e, idx) => {
-              if (e.id === target.id) {
-                const newHp = Math.max(0, e.hp - finalDamage);
-                addFloatingDamage(e.id, finalDamage, false, isWeakness);
-                return { ...e, hp: newHp, isDead: newHp <= 0, actionState: 'bb_hurt' as const, isWeaknessHit: isWeakness };
-              }
-              return e;
-            });
-            setEnemyUnits([...currentEnemies]);
-            setBbHitEffect({ targetId: target.id, element: attacker.template.element });
-            playSound('bb_hit');
-            if (isWeakness) setTimeout(() => playSound('weakness'), 100);
-            setTimeout(() => setBbHitEffect(null), 800);
-          } else {
-            currentPlayer = currentPlayer.map((p, idx) => {
-              if (p.id === target.id) {
-                const newHp = Math.max(0, p.hp - finalDamage);
-                addFloatingDamage(p.id, finalDamage, false, isWeakness);
-                const newBb = Math.min(p.maxBb, p.bbGauge + 3);
-                return { ...p, hp: newHp, isDead: newHp <= 0, bbGauge: newBb, actionState: 'bb_hurt' as const, isWeaknessHit: isWeakness };
-              }
-              return p;
-            });
-            setPlayerUnits([...currentPlayer]);
-            setBbHitEffect({ targetId: target.id, element: attacker.template.element });
-            playSound('bb_hit');
-            if (isWeakness) setTimeout(() => playSound('weakness'), 100);
-            setTimeout(() => setBbHitEffect(null), 800);
-          }
-
-          addLog(`${attacker.template.name} uses ${skill.name}! ${finalDamage} dmg! ${isWeakness ? '(Weakness!)' : ''}`);
-        }
-      } else {
-        const elementMultiplier = getElementMultiplier(attacker.template.element, target.template.element);
-        const isWeakness = elementMultiplier > 1.0;
-        let rawDamage = Math.max(1, attacker.atk - (target.def * 0.5));
-        let finalDamage = Math.floor(rawDamage * elementMultiplier);
-
-        if (isPlayer) {
-          currentPlayer = currentPlayer.map((p, idx) => {
-            if (p.id === attacker.id) return { ...p, actionState: 'attacking' as const };
-            return p;
-          });
-          setPlayerUnits([...currentPlayer]);
-        } else {
-          currentEnemies = currentEnemies.map((e, idx) => {
-            if (e.id === attacker.id) return { ...e, actionState: 'attacking' as const };
-            return e;
-          });
-          setEnemyUnits([...currentEnemies]);
-        }
-        
-        await new Promise(r => setTimeout(r, 200));
-
-        if (isPlayer) {
-          currentEnemies = currentEnemies.map((e, idx) => {
-            if (e.id === target.id) {
-              const newHp = Math.max(0, e.hp - finalDamage);
-              addFloatingDamage(e.id, finalDamage, false, isWeakness);
-              return { ...e, hp: newHp, isDead: newHp <= 0, actionState: 'hurt' as const, isWeaknessHit: isWeakness };
-            }
-            return e;
-          });
-          setEnemyUnits([...currentEnemies]);
-          
-          currentPlayer = currentPlayer.map((p, idx) => {
-            if (p.id === attacker.id) {
-              const newBb = Math.min(p.maxBb, p.bbGauge + 3);
-              return { ...p, bbGauge: newBb, actionState: 'idle' as const };
-            }
-            return p;
-          });
-          setPlayerUnits([...currentPlayer]);
-          
-          if (isWeakness) playSound('weakness');
-          else playSound('hit');
-        } else {
-          currentPlayer = currentPlayer.map((p, idx) => {
-            if (p.id === target.id) {
-              const newHp = Math.max(0, p.hp - finalDamage);
-              addFloatingDamage(p.id, finalDamage, false, isWeakness);
-              const newBb = Math.min(p.maxBb, p.bbGauge + 3);
-              return { ...p, hp: newHp, isDead: newHp <= 0, bbGauge: newBb, actionState: 'hurt' as const, isWeaknessHit: isWeakness };
-            }
-            return p;
-          });
-          setPlayerUnits([...currentPlayer]);
-          
-          currentEnemies = currentEnemies.map((e, idx) => {
-            if (e.id === attacker.id) return { ...e, actionState: 'idle' as const };
-            return e;
-          });
-          setEnemyUnits([...currentEnemies]);
-          
-          if (isWeakness) playSound('weakness');
-          else playSound('hit');
-        }
-
-        addLog(`${attacker.template.name} attacks ${target.template.name} for ${finalDamage} dmg! ${isWeakness ? '(Weakness!)' : ''}`);
-      }
-
-      await new Promise(r => setTimeout(r, 400));
-
-      if (isPlayer) {
-        currentPlayer = currentPlayer.map(p => {
-          if (p.id === attacker.id) return { ...p, queuedBb: false, actionState: 'idle' as const };
-          return p;
-        });
-        currentEnemies = currentEnemies.map(e => {
-          if (e.id === target.id) return { ...e, actionState: e.isDead ? 'dead' as const : 'idle' as const, isWeaknessHit: false };
-          return e;
-        });
-      } else {
-        currentEnemies = currentEnemies.map(e => {
-          if (e.id === attacker.id) return { ...e, queuedBb: false, actionState: 'idle' as const };
-          return e;
-        });
-        currentPlayer = currentPlayer.map(p => {
-          if (p.id === target.id) return { ...p, actionState: p.isDead ? 'dead' as const : 'idle' as const, isWeaknessHit: false };
-          return p;
-        });
-      }
+      const enemyDead = currentEnemies.every(e => e.isDead);
+      const playerDead = currentPlayer.every(p => p.isDead);
       
-      setPlayerUnits([...currentPlayer]);
-      setEnemyUnits([...currentEnemies]);
-      
-      await new Promise(r => setTimeout(r, 100));
-
-      if (currentEnemies.every(e => e.isDead)) {
+      if (enemyDead) {
         setTurnState('victory');
         addLog("Victory!");
         setTimeout(() => onEnd(true), 2000);
         return;
       }
 
-      if (currentPlayer.every(p => p.isDead)) {
+      if (playerDead) {
         setTurnState('defeat');
         addLog("Defeat...");
         setTimeout(() => onEnd(false), 2000);
